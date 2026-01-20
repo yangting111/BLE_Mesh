@@ -1,0 +1,8 @@
+1.判断是否为协议漏洞，如果是判断是什么协议
+2.判断协议实现漏洞
+3.是否unrelated application-layer or configuration issues，不和协议基础实现相关
+4.是否可以通过黑盒测试发现
+output json
+{
+    
+}

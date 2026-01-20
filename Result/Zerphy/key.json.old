@@ -1,0 +1,20 @@
+{
+    "AdvA": "fe:89:db:13:b3:d0",
+    "netkeys": [
+        {
+            "key": "f6fae27022a86f452fe24f878804752b",
+            "ivindex": "0x0"
+        }
+    ],
+    "devkeys": [
+        {
+            "key": "fae1a3d73befa4408900444e0cc585e0",
+            "address": 5
+        }
+    ],
+    "appkeys": [
+        {
+            "key": "12121212121212121212121212121212"
+        }
+    ]
+}
