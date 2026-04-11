@@ -11,7 +11,7 @@ device = {
     "config_file": "/home/yangting/Documents/BleMeshTest/srcs/Config_File/Esp32/esp_ble_security.ini",
     "learned_model_path": "/home/yangting/Documents/BleMeshTest/result/dot_file/Esp32/esp_ble_security_l2cap.dot",
     "log_path": "/home/yangting/Documents/BleMeshTest/result/log_file/Esp32/esp_ble_security.log",
-    "port_name": "/dev/ttyACM9",
+    "port_name": "/dev/ttyACM0",
     "logs_pcap": True,
     "pcap_filename": "/home/yangting/Documents/BleMeshTest/result/log_file/Esp32/test_smp_legency.pcap",
     "return_handle_layer": [1,3] ,

